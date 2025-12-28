@@ -85,9 +85,6 @@ public class LibraryService {
 
     Book entity = book.get();
     if (entity.getReservationQueue().isEmpty() && entity.getLoanedTo() == null) {
-      if (!canMemberBorrow(memberId)) {
-        return Result.failure("BORROW_LIMIT");
-      }
       borrowBook(entity.getId(), memberId);
       return Result.success();
     }
