@@ -69,10 +69,6 @@ public class LibraryService {
         return ResultWithNext.success(nextMember);
     }
 
-    public boolean isReturningMemberTheBorrower(Book book, String memberId) {
-        return Objects.equals(book.getLoanedTo(), memberId);
-    }
-
     public Result reserveBook(String bookId, String memberId) {
         Optional<Book> book = bookRepository.findById(bookId);
         if (book.isEmpty()) {
@@ -87,7 +83,7 @@ public class LibraryService {
             borrowBook(entity.getId(), memberId);
             return Result.success();
         }
-        if (isMemberInQueue(entity, memberId)) {
+        if (entity.getReservationQueue().contains(memberId)) {
             return Result.failure("MEMBER_ALREADY_IN_QUEUE");
         }
         entity.getReservationQueue().add(memberId);
@@ -105,47 +101,11 @@ public class LibraryService {
         }
 
         Book entity = book.get();
-        boolean removed = entity.getReservationQueue().remove(memberId);
-        if (!removed) {
+        if (!entity.getReservationQueue().remove(memberId)) {
             return Result.failure("NOT_RESERVED");
         }
         bookRepository.save(entity);
         return Result.success();
-    }
-
-    public boolean canMemberBorrow(String memberId) {
-        if (!memberRepository.existsById(memberId)) {
-            return false;
-        }
-
-
-        int active = bookRepository.findByLoanedTo(memberId).size();
-        /*for (Book book : bookRepository.findAll()) {
-            if (memberId.equals(book.getLoanedTo())) {
-                active++;
-            }
-        }*/
-        return active < MAX_LOANS;
-    }
-
-    public boolean isBookBorrowed(Book book) {
-        if (book.getLoanedTo() != null) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isMemberNextInQueue(Book book, String memberId) {
-        if (book.getReservationQueue().getFirst().equals(memberId)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isMemberInQueue(Book book, String memberId) {
-        return book.getReservationQueue().contains(memberId);
     }
 
     public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
@@ -309,5 +269,40 @@ public class LibraryService {
     }
 
     public record ReservationPosition(String bookId, int position) {
+    }
+
+    private boolean canMemberBorrow(String memberId) {
+        if (!memberRepository.existsById(memberId)) {
+            return false;
+        }
+
+
+        int active = bookRepository.findByLoanedTo(memberId).size();
+        /*for (Book book : bookRepository.findAll()) {
+            if (memberId.equals(book.getLoanedTo())) {
+                active++;
+            }
+        }*/
+        return active < MAX_LOANS;
+    }
+
+    private boolean isReturningMemberTheBorrower(Book book, String memberId) {
+        return Objects.equals(book.getLoanedTo(), memberId);
+    }
+
+    private boolean isBookBorrowed(Book book) {
+        if (book.getLoanedTo() != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isMemberNextInQueue(Book book, String memberId) {
+        if (book.getReservationQueue().getFirst().equals(memberId)) {
+            return true;
+        }
+
+        return false;
     }
 }
