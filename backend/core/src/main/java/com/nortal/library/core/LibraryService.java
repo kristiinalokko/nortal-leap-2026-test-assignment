@@ -64,6 +64,7 @@ public class LibraryService {
         entity.setDueDate(null);
         String nextMember =
                 entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
+        if (nextMember != null) { borrowBook(entity.getId(), nextMember); }
         bookRepository.save(entity);
         return ResultWithNext.success(nextMember);
     }
@@ -82,6 +83,13 @@ public class LibraryService {
         }
 
         Book entity = book.get();
+        if (entity.getReservationQueue().isEmpty() && entity.getLoanedTo() == null) {
+            borrowBook(entity.getId(), memberId);
+            return Result.success();
+        }
+        if (isMemberInQueue(entity, memberId)) {
+            return Result.failure("MEMBER_ALREADY_IN_QUEUE");
+        }
         entity.getReservationQueue().add(memberId);
         bookRepository.save(entity);
         return Result.success();
@@ -132,6 +140,10 @@ public class LibraryService {
         }
 
         return false;
+    }
+
+    public boolean isMemberInQueue(Book book, String memberId) {
+        return book.getReservationQueue().contains(memberId);
     }
 
     public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
