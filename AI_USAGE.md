@@ -4,5 +4,5 @@ Briefly describe how you used AI (tools, prompts, code snippets, fixes). Be conc
 
 1. Could not get project setup running on intellij, needed help with run configurations. I used Claude with different prompts and copied any errors that appeared.
 
-
+2. In third part, i used Claude on whether to use JPA naming convention to resolve finByLoanedTo() or write the explicit custom query
 
