@@ -117,12 +117,14 @@ public class LibraryService {
         if (!memberRepository.existsById(memberId)) {
             return false;
         }
-        int active = 0;
-        for (Book book : bookRepository.findAll()) {
+
+
+        int active = bookRepository.findByLoanedTo(memberId).size();
+        /*for (Book book : bookRepository.findAll()) {
             if (memberId.equals(book.getLoanedTo())) {
                 active++;
             }
-        }
+        }*/
         return active < MAX_LOANS;
     }
 
